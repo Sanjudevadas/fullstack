@@ -1,7 +1,10 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 const Form = () => {
+
+const [message,setMessage]= useState(" ");
+
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -16,18 +19,37 @@ const Form = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
 
-    setFormData({
-      name: "",
-      email: "",
-      subject: "",
-    });
+    try {
+      const response = await fetch("http://localhost:8080/coding/backend/form.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", // ✅ FIXED: lowercase "headers"
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+       if(data.status === "success"){
+        setMessage(`Thanks for submitting the form, ${formData.name}. ${data.message}!`);
+         setFormData({ name: '', email: '', subject: '' });
+
+       }   else {
+        setMessage(data.message || 'Something went wrong');
+      }
+
+      console.log("Server response:", data);
+
+   
+    } catch (err) {
+      console.error("Error submitting form:", err);
+    }
   };
 
-  return (
+  return (<div>
     <form className="form-container" onSubmit={handleSubmit}>
       <div>
         <label htmlFor="name">Name:</label>
@@ -64,6 +86,8 @@ const Form = () => {
 
       <button type="submit">Submit</button>
     </form>
+     {message && <p style={{ marginTop: '10px', color: 'green' }}>{message}</p>}
+    </div>
   );
 };
 
