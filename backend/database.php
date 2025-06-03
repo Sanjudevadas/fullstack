@@ -9,8 +9,13 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 
 // Check connection
 if ($conn->connect_error) {
-    die("❌ Connection failed: " . $conn->connect_error);
-} else {
-    echo "✅ Connected successfully to database!";
+    // Don't use die() with echo - it breaks JSON responses
+    error_log("Connection failed: " . $conn->connect_error);
+    http_response_code(500);
+    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    exit();
 }
+
+// Remove this line - it breaks JSON responses:
+// echo "✅ Connected successfully to database!";
 ?>
