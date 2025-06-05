@@ -1,18 +1,17 @@
 import React, { useState } from "react";
+import Swal from "sweetalert2";
 
 const Form = () => {
-  const [messages, setMessages] = useState("");
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    message: "", // Back to "message" to match database
+    message: "",
   });
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
+    setFormData((prev) => ({
+      ...prev,
       [id]: value,
     }));
   };
@@ -29,21 +28,23 @@ const Form = () => {
         body: JSON.stringify(formData),
       });
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers.get('content-type'));
-
-      // Get the raw response text
       const responseText = await response.text();
-      console.log("Raw response:", responseText);
 
       if (!response.ok) {
-        setMessages(`Server error: ${response.status} - ${responseText}`);
+        Swal.fire({
+          icon: "error",
+          title: "Server Error",
+          text: `${response.status} - ${responseText}`,
+        });
         return;
       }
 
-      // Only try to parse JSON if we have content
-      if (responseText.trim() === '') {
-        setMessages("Server returned empty response");
+      if (responseText.trim() === "") {
+        Swal.fire({
+          icon: "error",
+          title: "Empty Response",
+          text: "Server returned empty response",
+        });
         return;
       }
 
@@ -53,20 +54,35 @@ const Form = () => {
       } catch (jsonError) {
         console.error("JSON parse error:", jsonError);
         console.error("Response was:", responseText);
-        setMessages("Server returned invalid JSON response");
+        Swal.fire({
+          icon: "error",
+          title: "Invalid JSON",
+          text: "Server returned invalid JSON response",
+        });
         return;
       }
 
       if (data.status === "success") {
-        setMessages(`Thanks for submitting the form, ${formData.name}. ${data.message}!`);
-        setFormData({ name: '', email: '', message: '' }); // Back to "message"
+        Swal.fire({
+          icon: "success",
+          title: "Thank You!",
+          text: `Hi ${formData.name}, your message has been received.`,
+        });
+        setFormData({ name: "", email: "", message: "" });
       } else {
-        setMessages(data.message || 'Something went wrong'); // Fixed: changed "messages" to "message"
+        Swal.fire({
+          icon: "error",
+          title: "Submission Failed",
+          text: data.message || "Something went wrong",
+        });
       }
-
     } catch (err) {
-      console.error("Error submitting form:", err);
-      setMessages('Network error. Please try again.'); // Fixed: changed "setMessage" to "setMessages"
+      console.error("Network error:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Network Error",
+        text: "Please check your internet connection and try again.",
+      });
     }
   };
 
@@ -81,6 +97,7 @@ const Form = () => {
             placeholder="Enter your name"
             value={formData.name}
             onChange={handleChange}
+            required
           />
         </div>
 
@@ -92,6 +109,7 @@ const Form = () => {
             placeholder="Enter your email"
             value={formData.email}
             onChange={handleChange}
+            required
           />
         </div>
 
@@ -100,15 +118,15 @@ const Form = () => {
           <input
             type="text"
             id="message"
-            placeholder="Enter Message"
+            placeholder="Enter your message"
             value={formData.message}
             onChange={handleChange}
+            required
           />
         </div>
 
         <button type="submit">Submit</button>
       </form>
-      {messages && <p style={{ marginTop: '10px', color: 'green' }}>{messages}</p>} {/* Fixed: changed "message" to "messages" */}
     </div>
   );
 };
