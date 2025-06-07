@@ -17,7 +17,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'database.php';
 require 'sendEmail.php';
 
+// Load .env variables
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+/**
+ * Verify Google reCAPTCHA token
+ * @param string $token
+ * @return bool
+ */
+function verifyRecaptcha($token) {
+    $secretKey = getenv('RECAPTCHA_SECRET_KEY');
+    $url = 'https://www.google.com/recaptcha/api/siteverify';
+
+    $data = http_build_query([
+        'secret' => $secretKey,
+        'response' => $token
+    ]);
+
+    $options = [
+        'http' => [
+            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+            'method'  => 'POST',
+            'content' => $data,
+        ],
+    ];
+    $context  = stream_context_create($options);
+    $result = file_get_contents($url, false, $context);
+    if ($result === false) {
+        return false;
+    }
+
+    $responseData = json_decode($result, true);
+    return isset($responseData['success']) && $responseData['success'] === true;
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
+
+// Check reCAPTCHA token first
+$recaptchaToken = $data['recaptchaToken'] ?? '';
+
+if (!$recaptchaToken || !verifyRecaptcha($recaptchaToken)) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "reCAPTCHA verification failed. Please try again."]);
+    exit();
+}
 
 if ($data) {
     $name = htmlspecialchars(trim($data["name"] ?? ""));
@@ -34,10 +78,10 @@ if ($data) {
     $stmt->bind_param("sss", $name, $email, $message);
 
     if ($stmt->execute()) {
-        // Send to admin
+        // Send email to admin
         $mailResult = sendEmail($name, $email, $message);
 
-        // Send confirmation to user
+        // Send confirmation email to user
         $userMailResult = sendUserConfirmationEmail($name, $email);
 
         if ($mailResult === true && $userMailResult === true) {
@@ -70,5 +114,3 @@ if ($data) {
     http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Invalid input"]);
 }
-
-?>

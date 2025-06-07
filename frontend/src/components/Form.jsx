@@ -1,5 +1,9 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
+import ReCAPTCHA from "react-google-recaptcha";
+
+//const RECAPTCHA_SITE_KEY = "YOUR_RECAPTCHA_SITE_KEY";  // Replace with your site key//const RECAPTCHA_SITE_KEY = "6Ld7kVgrAAAAAKyAtPISXMuwTy2w8IgRxkTtVihl";
+const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const Form = () => {
   const [formData, setFormData] = useState({
@@ -7,6 +11,7 @@ const Form = () => {
     email: "",
     message: "",
   });
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -16,8 +21,20 @@ const Form = () => {
     }));
   };
 
+  const handleRecaptchaChange = (token) => {
+    setRecaptchaToken(token);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!recaptchaToken) {
+      Swal.fire({
+        icon: "warning",
+        title: "Please verify you're not a robot",
+      });
+      return;
+    }
 
     try {
       const response = await fetch("http://localhost:8080/coding/backend/form.php", {
@@ -25,7 +42,7 @@ const Form = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, recaptchaToken }),
       });
 
       const responseText = await response.text();
@@ -69,6 +86,7 @@ const Form = () => {
           text: `Hi ${formData.name}, your message has been received.`,
         });
         setFormData({ name: "", email: "", message: "" });
+        setRecaptchaToken(null);
       } else {
         Swal.fire({
           icon: "error",
@@ -124,6 +142,12 @@ const Form = () => {
             required
           />
         </div>
+
+     <ReCAPTCHA
+  sitekey={RECAPTCHA_SITE_KEY}
+  onChange={handleRecaptchaChange}
+/>
+
 
         <button type="submit">Submit</button>
       </form>
