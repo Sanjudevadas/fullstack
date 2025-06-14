@@ -1,37 +1,55 @@
 import React from "react";
-import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
+import { Briefcase, UserCheck, BellRing } from "lucide-react";
+import { FaFeatherAlt } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-gradient-to-tr from-indigo-100 via-sky-100 to-rose-100 pt-12 pb-10">
-      <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-700 text-sm">
-        
-        {/* Left: Brand */}
-        <div className="mb-6 md:mb-0 text-center md:text-left">
-          <h2 className="text-xl font-bold text-indigo-600">SanjYou🤖</h2>
-          <p className="text-gray-500 mt-1">
-            &copy; {new Date().getFullYear()} All rights reserved.
-          </p>
-        </div>
+    <footer className="relative z-10 pt-12 pb-10">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="bg-white/40 backdrop-blur-md rounded-2xl shadow-lg px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-8 text-gray-700 text-sm border border-white/50">
 
-        {/* Center: Navigation Links */}
-        <div className="flex space-x-6 mb-6 md:mb-0">
-          <a href="/about" className="hover:text-indigo-600 transition duration-300">About</a>
-          <a href="/privacy" className="hover:text-indigo-600 transition duration-300">Privacy</a>
-          <a href="/contact" className="hover:text-indigo-600 transition duration-300">Contact</a>
-        </div>
+          {/* Left: Logo & Brand */}
+          <div className="text-center md:text-left flex flex-col items-center md:items-start">
+            <div className="flex items-center gap-2 mb-2">
+              <FaFeatherAlt className="text-2xl text-indigo-700 drop-shadow-md" />
+              <span className="text-xl font-[Playfair Display] font-semibold tracking-wide text-gray-800">
+                Jobora
+              </span>
+            </div>
+            <p className="text-gray-600">
+              &copy; {new Date().getFullYear()} SanjYou • All rights reserved.
+            </p>
+          </div>
 
-        {/* Right: Social Icons */}
-        <div className="flex space-x-4">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-indigo-600 transition">
-            <FaGithub size={20} />
-          </a>
-          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-indigo-600 transition">
-            <FaLinkedin size={20} />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-indigo-600 transition">
-            <FaTwitter size={20} />
-          </a>
+          {/* Center: Feature Icons (Hero-style) */}
+          <div className="flex flex-col sm:flex-row gap-6 text-gray-600 text-sm text-center sm:text-left">
+            <div className="flex items-center gap-2">
+              <Briefcase size={20} className="text-blue-600" />
+              Verified Jobs
+            </div>
+            <div className="flex items-center gap-2">
+              <UserCheck size={20} className="text-green-600" />
+              Easy Apply
+            </div>
+            <div className="flex items-center gap-2">
+              <BellRing size={20} className="text-pink-600" />
+              Job Alerts
+            </div>
+          </div>
+
+          {/* Right: Nav Links */}
+          <div className="flex space-x-6 text-sm font-medium">
+            <a href="/about" className="hover:text-blue-600 transition duration-300">
+              About
+            </a>
+            <a href="/privacy" className="hover:text-blue-600 transition duration-300">
+              Privacy
+            </a>
+            <a href="/contact" className="hover:text-blue-600 transition duration-300">
+              Contact
+            </a>
+          </div>
+
         </div>
       </div>
     </footer>
