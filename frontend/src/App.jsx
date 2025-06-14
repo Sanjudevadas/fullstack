@@ -7,25 +7,34 @@ import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import HeroSection from "./components/HeroSection";
 import Footer from "./components/Footer";
+//import JobsPage from "./components/JobsPage";
+import Jobs from "./components/Jobs" // ✅ import this
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
-    <div>
-      <Router>
-        <div>
-          <Header/>
+    <Router>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HeroSection />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-             <Route path="/login" element={<LoginForm/>} />
-              <Route path="/register" element={<RegisterForm />} />
-
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRole="admin">
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/jobs" element={<Jobs />} /> {/* ✅ added */}
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/register" element={<RegisterForm />} />
           </Routes>
-          <Footer/>
-        </div>
-      </Router>
-    
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
