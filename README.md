@@ -21,7 +21,7 @@
 ## 🖼️ Screenshots
 
 ### 🏠 Home Page
-![Home](src/screenshots/home.png)
+![Home](frontend/src/screenshots/home.png)
 
 ### 📄 Job Listing
 ![Listing](src/screenshots/joblisting.png)
