@@ -1,7 +1,7 @@
 <?php
 // Allow CORS
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
@@ -11,10 +11,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Include DB connection (ensure this file sets $conn)
+// Include DB connection
 require_once 'database.php';
 
-// Get JSON input
+// Handle GET - Fetch Jobs
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $sql = "SELECT * FROM job_posts ORDER BY id DESC";
+    $result = $conn->query($sql);
+    $jobs = [];
+
+    if ($result) {
+        while ($row = $result->fetch_assoc()) {
+            $jobs[] = $row;
+        }
+        echo json_encode($jobs);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to fetch jobs."
+        ]);
+    }
+
+    $conn->close();
+    exit();
+}
+
+// Handle POST - Insert Job
 $input = json_decode(file_get_contents("php://input"));
 
 if (!$input) {
@@ -25,22 +47,11 @@ if (!$input) {
     exit;
 }
 
-// Validate method
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Only POST requests are allowed."
-    ]);
-    exit;
-}
-
-// Sanitize data
 $title = mysqli_real_escape_string($conn, trim($input->title ?? ''));
 $description = mysqli_real_escape_string($conn, trim($input->description ?? ''));
 $location = mysqli_real_escape_string($conn, trim($input->location ?? ''));
 $type = mysqli_real_escape_string($conn, trim($input->type ?? ''));
 
-// Validate required
 if (!$title || !$description || !$location || !$type) {
     echo json_encode([
         "status" => "error",
@@ -49,7 +60,6 @@ if (!$title || !$description || !$location || !$type) {
     exit;
 }
 
-// Insert into DB
 $stmt = $conn->prepare("INSERT INTO job_posts (title, description, location, type) VALUES (?, ?, ?, ?)");
 
 if (!$stmt) {

@@ -1,35 +1,31 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Search, MapPin, Clock, DollarSign, Building2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { MapPin, Clock, Building2, X } from "lucide-react";
 
 const Jobs = () => {
   const [jobs, setJobs] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const JOBS_API_URL = "https://remotive.io/api/remote-jobs?limit=20"; // using free API
+  const [showModal, setShowModal] = useState(false);
+  const [currentJobId, setCurrentJobId] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    resume_url: ""
+  });
+
+  const API_URL = "http://localhost:8080/coding/backend/jobpost.php";
+  const APPLY_URL = "http://localhost:8080/coding/backend/apply.php";
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await axios.get(JOBS_API_URL);
-        const jobResults = response.data.jobs.map((job, index) => ({
-          id: index,
-          title: job.title,
-          company: job.company_name,
-          location: job.candidate_required_location || "Remote",
-          type: job.job_type || "Full Time",
-          salary: job.salary || "N/A",
-          skills: job.tags || ["N/A"],
-          description: job.description,
-          posted: job.publication_date ? new Date(job.publication_date).toDateString() : "Recently"
-        }));
-
-        setJobs(jobResults);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        if (Array.isArray(data)) setJobs(data);
+      } catch (err) {
+        console.error("Error fetching jobs:", err);
+      } finally {
         setLoading(false);
       }
     };
@@ -37,134 +33,144 @@ const Jobs = () => {
     fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
-    const matchesSearch =
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.skills.some((skill) => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+  const handleApply = (jobId) => {
+    setCurrentJobId(jobId);
+    setShowModal(true);
+  };
 
-    const matchesLocation =
-      locationFilter === "" || job.location.toLowerCase().includes(locationFilter.toLowerCase());
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
 
-    return matchesSearch && matchesLocation;
-  });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      ...formData,
+      job_id: currentJobId
+    };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading amazing opportunities...</p>
-        </div>
-      </div>
-    );
-  }
+    try {
+      const res = await fetch(APPLY_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+
+      if (result.status === "success") {
+        alert("✅ Application submitted!");
+        setShowModal(false);
+        setFormData({ name: "", email: "", phone: "", resume_url: "" });
+      } else {
+        alert("❌ Error: " + result.message);
+      }
+    } catch (err) {
+      alert("❌ Network Error!");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-blue-700 mb-10">
-          🔍 Explore Latest Job Listings
-        </h1>
+    <div className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold text-blue-700 text-center mb-6">💼 Job Listings</h1>
 
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search jobs, companies, or skills..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Location (e.g., Remote, New York)"
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="mt-4 text-sm text-gray-600">
-            Found {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredJobs.map((job) => (
+      {loading ? (
+        <p className="text-center">Loading...</p>
+      ) : (
+        <div className="grid gap-6">
+          {jobs.map((job) => (
             <div
               key={job.id}
-              className="bg-white shadow-lg rounded-xl p-6 border hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="p-6 bg-white shadow rounded-xl border"
             >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-xl font-semibold text-gray-800 flex-1">
-                  {job.title}
-                </h3>
-                <span className="text-xs text-gray-500 ml-2">{job.posted}</span>
+              <h2 className="text-xl font-bold">{job.title}</h2>
+              <div className="text-sm text-gray-600 flex items-center gap-2 mt-2">
+                <Building2 size={16} />
+                <span>{job.type}</span>
               </div>
-
-              <div className="flex items-center text-gray-600 mb-2">
-                <Building2 className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">{job.company}</span>
+              <div className="text-sm text-gray-600 flex items-center gap-2">
+                <MapPin size={16} />
+                <span>{job.location}</span>
               </div>
-
-              <div className="flex items-center text-gray-600 mb-2">
-                <MapPin className="w-4 h-4 mr-2" />
-                <span className="text-sm">{job.location}</span>
+              <div className="text-sm text-gray-600 flex items-center gap-2">
+                <Clock size={16} />
+                <span>Posted recently</span>
               </div>
-
-              <div className="flex items-center text-gray-600 mb-2">
-                <Clock className="w-4 h-4 mr-2" />
-                <span className="text-sm">{job.type}</span>
-              </div>
-
-              <div className="flex items-center text-green-600 mb-4">
-                <DollarSign className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">{job.salary}</span>
-              </div>
-
-              <div className="mb-4">
-                <div className="flex flex-wrap gap-2">
-                  {job.skills.slice(0, 3).map((skill, index) => (
-                    <span
-                      key={index}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                  {job.skills.length > 3 && (
-                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                      +{job.skills.length - 3} more
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <p className="text-gray-500 text-sm mb-4 line-clamp-2">
-                {job.description.replace(/<[^>]*>?/gm, '').slice(0, 150)}...
+              <p className="text-gray-700 text-sm mt-2">
+                {job.description.length > 150
+                  ? job.description.slice(0, 150) + "..."
+                  : job.description}
               </p>
-
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+              <button
+                onClick={() => handleApply(job.id)}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
                 Apply Now
               </button>
             </div>
           ))}
         </div>
+      )}
 
-        {filteredJobs.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No jobs found</h3>
-            <p className="text-gray-500">Try adjusting your search criteria</p>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+            >
+              <X />
+            </button>
+            <h3 className="text-xl font-bold text-center mb-4">📝 Apply for Job</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                name="name"
+                placeholder="Full Name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                name="phone"
+                type="tel"
+                placeholder="Phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                name="resume_url"
+                placeholder="Resume Link (e.g. Google Drive)"
+                value={formData.resume_url}
+                onChange={handleChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              >
+                Submit Application
+              </button>
+            </form>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

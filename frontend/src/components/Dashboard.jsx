@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PostJob from "./dashboard/PostJob";
-import { ClipboardList, Briefcase, Settings, LogOut, Menu, X } from "lucide-react";
+import Submissions from "./dashboard/Submissions";
+import {
+  ClipboardList,
+  Briefcase,
+  Settings,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("submissions");
@@ -18,7 +26,7 @@ const Dashboard = () => {
     const content = {
       submissions: {
         title: "📥 Form Submissions",
-        body: "This section will show form submissions.",
+        body: <Submissions />,
       },
       jobs: {
         title: "🧰 Post a Job",
@@ -26,11 +34,11 @@ const Dashboard = () => {
       },
       settings: {
         title: "⚙️ Settings",
-        body: "Settings content will be available here.",
+        body: <p>Settings content will be available here.</p>,
       },
       logout: {
         title: "👋 Logged Out",
-        body: "You have been logged out.",
+        body: <p>You have been logged out.</p>,
       },
     };
 
@@ -48,7 +56,11 @@ const Dashboard = () => {
         >
           <h2 className="text-2xl font-bold mb-4">{selected.title}</h2>
           <div className="text-gray-800">
-            {typeof selected.body === "string" ? <p>{selected.body}</p> : selected.body}
+            {typeof selected.body === "string" ? (
+              <p>{selected.body}</p>
+            ) : (
+              selected.body
+            )}
           </div>
         </motion.section>
       </AnimatePresence>
@@ -102,11 +114,13 @@ const Dashboard = () => {
             })}
           </ul>
         </div>
-        <p className="text-sm text-gray-500 mt-8 text-center md:text-left">&copy; 2025 SanjYou</p>
+        <p className="text-sm text-gray-500 mt-8 text-center md:text-left">
+          &copy; 2025 SanjYou
+        </p>
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-12 space-y-12  min-h-screen">
+      <main className="flex-1 p-6 md:p-12 space-y-12 min-h-screen">
         {renderContent()}
       </main>
     </div>

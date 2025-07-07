@@ -36,6 +36,7 @@ const LoginForm = () => {
 
       if (data.status === "success") {
         dispatch(login(data.user)); //store the user in redux
+       
         setMessage(`Welcome ${data.user.name} (${data.user.role})`);
 
         // Save to localStorage if remember is checked
