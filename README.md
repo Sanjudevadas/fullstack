@@ -24,16 +24,16 @@
 ![Home](frontend/src/screenshots/home.png)
 
 ### 📄 Job Listing
-![Listing](src/screenshots/joblisting.png)
+![Listing](frontend/src/screenshots/joblisting.png)
 
 ### 📝 Post a Job
-![Post Job](src/screenshots/postjob.png)
+![Post Job](frontend/src/screenshots/postjob.png)
 
 ### 📥 Application Form
-![Application Form](src/screenshots/form.png)
+![Application Form](frontend/src/screenshots/form.png)
 
 ### 📊 Submissions Dashboard
-![Form Submissions](src/screenshots/formsubmissions.png)
+![Form Submissions](frontend/src/screenshots/formsubmissions.png)
 
 ---
 
