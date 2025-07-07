@@ -2,7 +2,7 @@
 
 > A sleek job listing web app where recruiters post jobs and applicants apply seamlessly. Built with 💙 React + PHP + MySQL.
 
-![Jobora Banner](src/screenshots/home.png)
+![Jobora Banner](frontend/src/screenshots/home.png)
 
 ---
 
